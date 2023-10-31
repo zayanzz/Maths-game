@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Math Game with History</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+        }
+        h1, h2 {
+            color: #00BFFF; /* Sky Blue */
+        }
+        button {
+            background-color: #00BFFF;
+            color: #fff;
+            border: 2px solid #00BFFF;
+            border-radius: 10px;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #000080; /* Dark Blue */
+        }
+        input[type="text"] {
+            background-color: #000;
+            color: #fff;
+            border: 2px solid #00BFFF;
+            border-radius: 5px;
+            padding: 5px;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Choose a Math Game</h1>
+
+    <button id="addition">Addition</button>
+    <button id="subtraction">Subtraction</button>
+    <button id="multiplication">Multiplication</button>
+    <button id="division">Division</button>
+
+    <div id="game-container"></div>
+    <div id="countdown-container" style="display: none;">
+        <p>Sorry, you can continue the game after 10 seconds.</p>
+        <p>Page disabled. Counting time...</p>
+        <p id="countdown"></p>
+    </div>
+
+    <h2>History</h2>
+    <ul id="history"></ul>
+
+    <script>
+        const gameContainer = document.getElementById('game-container');
+        const historyElement = document.getElementById('history');
+        const countdownContainer = document.getElementById('countdown-container');
+        const countdownElement = document.getElementById('countdown');
+        
+        let incorrectAnswerCount = 0;
+        let countdownTime = 10; // 10 seconds
+        let countdownInterval;
+
+        function createMathGame(operation) {
+            if (incorrectAnswerCount >= 3) {
+                countdownContainer.style.display = 'block';
+                gameContainer.style.display = 'none';
+
+                countdownInterval = setInterval(function() {
+                    countdownTime--;
+
+                    if (countdownTime <= 0) {
+                        clearInterval(countdownInterval);
+                        countdownContainer.style.display = 'none';
+                        gameContainer.style.display = 'block';
+                        incorrectAnswerCount = 0; // Reset incorrect answer count
+                    }
+
+                    countdownElement.textContent = countdownTime;
+                }, 1000);
+
+                return;
+            }
+
+            const game = document.createElement('div');
+            game.innerHTML = `
+                <h2>${operation} Game</h2>
+                <div id="question"></div>
+                <input type="text" id="answer" placeholder="Your Answer">
+                <button id="submit">Submit Answer</button>
+                <button id="view-answer">View Answer</button>
+                <div id="result"></div>
+            `;
+            gameContainer.innerHTML = '';
+            gameContainer.appendChild(game);
+
+            let correctAnswer;
+
+            function generateQuestion() {
+                const num1 = Math.floor(Math.random() * 10);
+                const num2 = Math.floor(Math.random() * 10);
+                let question;
+                switch (operation) {
+                    case 'Addition':
+                        question = `${num1} + ${num2}`;
+                        correctAnswer = num1 + num2;
+                        break;
+                    case 'Subtraction':
+                        question = `${num1} - ${num2}`;
+                        correctAnswer = num1 - num2;
+                        break;
+                    case 'Multiplication':
+                        question = `${num1} * ${num2}`;
+                        correctAnswer = num1 * num2;
+                        break;
+                    case 'Division':
+                        num1 = num1 * num2;
+                        question = `${num1} / ${num2}`;
+                        correctAnswer = num1 / num2;
+                        break;
+                }
+                return question;
+            }
+
+            function checkAnswer() {
+                const userAnswer = parseInt(document.getElementById('answer').value, 10);
+                const questionText = document.getElementById('question').textContent;
+
+                const resultElement = document.getElementById('result');
+                const historyItem = document.createElement('li');
+                let correctness;
+
+                if (userAnswer === correctAnswer) {
+                    resultElement.textContent = 'Correct!';
+                    correctness = 'Correct';
+                    document.getElementById('question').textContent = generateQuestion();
+                    document.getElementById('answer').value = '';
+                } else {
+                    resultElement.textContent = 'Incorrect. The correct answer is ' + correctAnswer;
+                    correctness = 'Incorrect';
+                    incorrectAnswerCount++;
+
+                    if (incorrectAnswerCount >= 3) {
+                        countdownContainer.style.display = 'block';
+                        gameContainer.style.display = 'none';
+                    }
+                }
+
+                historyItem.textContent = `${questionText} = ${userAnswer} (${correctness})`;
+                historyElement.appendChild(historyItem);
+            }
+
+            function viewAnswer() {
+                alert(`The correct answer is: ${correctAnswer}`);
+            }
+
+            document.getElementById('question').textContent = generateQuestion();
+            document.getElementById('submit').addEventListener('click', checkAnswer);
+            document.getElementById('view-answer').addEventListener('click', viewAnswer);
+        }
+
+        document.getElementById('addition').addEventListener('click', () => createMathGame('Addition'));
+        document.getElementById('subtraction').addEventListener('click', () => createMathGame('Subtraction'));
+        document.getElementById('multiplication').addEventListener('click', () => createMathGame('Multiplication'));
+        document.getElementById('division').addEventListener('click', () => createMathGame('Division'));
+    </script>
+</body>
+</html>
